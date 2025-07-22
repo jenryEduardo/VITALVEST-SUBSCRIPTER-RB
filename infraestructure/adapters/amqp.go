@@ -1,9 +1,12 @@
 package adapters
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
+	"net/http"
 	"sub/domain"
+
 	"github.com/streadway/amqp"
 )
 
@@ -18,7 +21,7 @@ type ConnAMQP struct {
 }
 
 func NewConn() *ConnAMQP {
-	conn, err := amqp.Dial("amqp://guest:guest@13.220.254.127:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@98.84.72.237:5672/")
 	failOnError(err, "No se pudo conectar a RabbitMQ")
 	return &ConnAMQP{conn: conn}
 }
@@ -29,23 +32,23 @@ func (r *ConnAMQP) ListenToQueue() {
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"usuarios_cola", // nombre de la cola
-		false,           // durable
-		false,           // delete when unused
-		false,           // exclusive
-		false,           // no-wait
-		nil,             // argumentos
+		"usuarios_cola",
+		false,
+		false,
+		false,
+		false,
+		nil,
 	)
 	failOnError(err, "No se pudo declarar la cola")
 
 	msgs, err := ch.Consume(
-		q.Name, // queue
-		"",     // consumer tag
-		true,   // auto-ack (puedes poner false si quieres controlar tú la confirmación)
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // arguments
+		q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 	failOnError(err, "No se pudo registrar el consumidor")
 
@@ -64,13 +67,51 @@ func (r *ConnAMQP) ListenToQueue() {
 
 			log.Printf("📩 Recibido: %+v", sensorData)
 
-			// Aquí puedes hacer algo con `sensorData`, por ejemplo guardarlo en DB
+			// 1. BME280
+			bmePayload := map[string]interface{}{
+				"temperatura": sensorData.BME280.Temperatura,
+				"presion":     sensorData.BME280.Presion,
+				"humedad":     sensorData.BME280.Humedad,
+			}
+			sendPost("http://localhost:8080/bme", bmePayload, "BME280")
 
+			// 2. MPU6050
+			mpuPayload := map[string]interface{}{
+				"aceleracion_x": sensorData.MPU6050.Aceleracion.X,
+				"aceleracion_y": sensorData.MPU6050.Aceleracion.Y,
+				"aceleracion_z": sensorData.MPU6050.Aceleracion.Z,
+				"giroscopio_x":  sensorData.MPU6050.Giroscopio.X,
+				"giroscopio_y":  sensorData.MPU6050.Giroscopio.Y,
+				"giroscopio_z":  sensorData.MPU6050.Giroscopio.Z,
+			}
+			sendPost("http://localhost:8080/mpu", mpuPayload, "MPU6050")
 
-			
-
+			// 3. MLX90614
+			mlxPayload := map[string]interface{}{
+				"temperatura_ambiente": sensorData.MLX90614.TemperaturaAmbiente,
+				"temp_objeto":          sensorData.MLX90614.TempObjeto,
+			}
+			sendPost("http://localhost:8080/mlx", mlxPayload, "MLX90614")
 		}
 	}()
 
-	<-forever // Bloquea el main
+	<-forever
+}
+
+// Función auxiliar para enviar POST
+func sendPost(url string, payload map[string]interface{}, tag string) {
+	data, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("❌ [%s] Error al serializar JSON: %v", tag, err)
+		return
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		log.Printf("❌ [%s] Error al hacer POST: %v", tag, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	log.Printf("✅ [%s] Datos enviados. Status: %s", tag, resp.Status)
 }
