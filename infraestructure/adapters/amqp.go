@@ -77,12 +77,7 @@ func (r *ConnAMQP) ListenToQueue() {
 
 			// 2. MPU6050
 			mpuPayload := map[string]interface{}{
-				"aceleracion_x": sensorData.MPU6050.Aceleracion.X,
-				"aceleracion_y": sensorData.MPU6050.Aceleracion.Y,
-				"aceleracion_z": sensorData.MPU6050.Aceleracion.Z,
-				"giroscopio_x":  sensorData.MPU6050.Giroscopio.X,
-				"giroscopio_y":  sensorData.MPU6050.Giroscopio.Y,
-				"giroscopio_z":  sensorData.MPU6050.Giroscopio.Z,
+				"pasos": sensorData.MPU6050.Pasos,
 			}
 			sendPost("http://localhost:8080/mpu", mpuPayload, "MPU6050")
 
