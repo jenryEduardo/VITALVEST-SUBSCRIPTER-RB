@@ -73,20 +73,26 @@ func (r *ConnAMQP) ListenToQueue() {
 				"presion":     sensorData.BME280.Presion,
 				"humedad":     sensorData.BME280.Humedad,
 			}
-			sendPost("http://localhost:8080/bme", bmePayload, "BME280")
+			sendPost("https://vitalvest-back.namixcode.cc:8080/bme", bmePayload, "BME280")
 
 			// 2. MPU6050
 			mpuPayload := map[string]interface{}{
 				"pasos": sensorData.MPU6050.Pasos,
 			}
-			sendPost("http://localhost:8080/mpu", mpuPayload, "MPU6050")
+			sendPost("https://vitalvest-back.namixcode.cc:8080/mpu", mpuPayload, "MPU6050")
 
 			// 3. MLX90614
 			mlxPayload := map[string]interface{}{
 				"temperatura_ambiente": sensorData.MLX90614.TemperaturaAmbiente,
 				"temp_objeto":          sensorData.MLX90614.TempObjeto,
 			}
-			sendPost("http://localhost:8080/mlx", mlxPayload, "MLX90614")
+			sendPost("https://vitalvest-back.namixcode.cc:8080/mlx", mlxPayload, "MLX90614")
+
+				// 4. GSR
+			gsrpayload := map[string]interface{}{
+				"porcentaje":sensorData.GSR.Porcentaje,
+			}
+			sendPost("https://vitalvest-back.namixcode.cc:8080/gsr",gsrpayload,"GSR")
 		}
 	}()
 
