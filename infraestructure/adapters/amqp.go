@@ -21,7 +21,7 @@ type ConnAMQP struct {
 }
 
 func NewConn() *ConnAMQP {
-	conn, err := amqp.Dial("amqp://guest:guest@98.84.72.237:5672/")
+	conn, err := amqp.Dial("amqp://admin:tu_password_muy_segura@44.205.97.30:5672/")
 	failOnError(err, "No se pudo conectar a RabbitMQ")
 	return &ConnAMQP{conn: conn}
 }
@@ -73,26 +73,26 @@ func (r *ConnAMQP) ListenToQueue() {
 				"presion":     sensorData.BME280.Presion,
 				"humedad":     sensorData.BME280.Humedad,
 			}
-			sendPost("https://vivaltest-back.namixcode.cc/bme", bmePayload, "BME280")
+			sendPost("http://100.30.168.141/bme", bmePayload, "BME280")
 
 			// 2. MPU6050
 			mpuPayload := map[string]interface{}{
 				"pasos": sensorData.MPU6050.Pasos,
 			}
-			sendPost("https://vivaltest-back.namixcode.cc/mpu", mpuPayload, "MPU6050")
+			sendPost("http://100.30.168.141/mpu", mpuPayload, "MPU6050")
 
 			// 3. MLX90614
 			mlxPayload := map[string]interface{}{
 				"temperatura_ambiente": sensorData.MLX90614.TemperaturaAmbiente,
 				"temp_objeto":          sensorData.MLX90614.TempObjeto,
 			}
-			sendPost("https://vivaltest-back.namixcode.cc/mlx", mlxPayload, "MLX90614")
+			sendPost("http://100.30.168.141/mlx", mlxPayload, "MLX90614")
 
 				// 4. GSR
 			gsrpayload := map[string]interface{}{
 				"porcentaje":sensorData.GSR.Porcentaje,
 			}
-			sendPost("https://vivaltest-back.namixcode.cc/gsr",gsrpayload,"GSR")
+			sendPost("http://100.30.168.141/gsr",gsrpayload,"GSR")
 		}
 	}()
 
