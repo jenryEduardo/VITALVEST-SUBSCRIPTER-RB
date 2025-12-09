@@ -69,7 +69,7 @@ func (r *ConnAMQP) ListenToQueue() {
 
 			// 1. BME280
 			bmePayload := map[string]interface{}{
-				"temperatura": sensorData.BME280.Temperatura,
+				"temperatura_ambiente": sensorData.BME280.Temperatura,
 				"presion":     sensorData.BME280.Presion,
 				"humedad":     sensorData.BME280.Humedad,
 			}
@@ -84,7 +84,7 @@ func (r *ConnAMQP) ListenToQueue() {
 			// 3. MLX90614
 			mlxPayload := map[string]interface{}{
 				"temperatura_ambiente": sensorData.MLX90614.TemperaturaAmbiente,
-				"temp_objeto":          sensorData.MLX90614.TempObjeto,
+				"temperatura_objeto":          sensorData.MLX90614.TempObjeto,
 			}
 			sendPost("http://100.30.168.141/mlx", mlxPayload, "MLX90614")
 
